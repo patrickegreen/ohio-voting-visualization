@@ -1,0 +1,38 @@
+<!--
+AUTHORS:
+  Patrick Green (green.1125@osu.edu)
+  Rickie Kidwell (kidwell.53@osu.edu)
+SUBMITTED:
+  2018-11-11
+DESCRIPTION:
+  Creates a map of Ohio congressional districts and visualizes voting results from 2016 with US census demographics.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ohio Congressional Districts: Voting & Demographics (2016)</title>
+  <script src='https://d3js.org/d3.v5.min.js'></script>
+  <script src='js/dataProcessors.js'></script>
+  <script src='js/map.js'></script>
+  <link rel="stylesheet" type="text/css" href="css/voting.css">
+</head>
+<body>
+  <svg id='svgMap' width='800' height='800'></svg>
+  <svg id='svgGraph' width='400' height='800'></svg>
+  <script type='text/javascript'>
+    // Load all the datasets
+    d3.csv('data/demosByDistrict.csv', processDemos).then(function(dataDemos) {
+      d3.csv('data/votingResults.csv', processVoting).then(function(dataVoting) {
+        d3.json('data/districtGeo.json', processGeo).then(function(dataGeo) {
+          initialize(dataDemos, dataVoting, dataGeo);
+        });
+      })
+    });
+
+    function initialize(dataDemos, dataVoting, dataGeo) {
+      renderMap(dataGeo);
+    }
+  </script>
+</body>
+</html>
