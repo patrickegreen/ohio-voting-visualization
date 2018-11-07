@@ -1,9 +1,9 @@
-# Convert a shapefile to a geojson for d3
+# Convert a shapefile to a geojson for d3 (select OH)
 from json import dumps
 
 import shapefile
 
-infile = "D:/Downloads/cb_2017_us_cd115_20m/cb_2017_us_cd115_20m.shp"
+infile = "D:/Downloads/cb_2017_us_cd115_5m/cb_2017_us_cd115_5m.shp"
 outfile = "D:/Downloads/district_geo.json"
 reader = shapefile.Reader(infile)
 fields = reader.fields[1:]
