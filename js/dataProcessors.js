@@ -16,7 +16,7 @@ function processGeo(row, idx, columns) {
 //          FLAT_DEMOS[Topic][Subject][Title] = new_key
 //      (2) Grouped demos are flattened to an array under a new key, with clean sub-group names for reference
 //          GROUP_DEMOS[Topic][Subject][Title] = [group_key, new_column]
-//          if new_column is null, use old
+//          if new_column is null, use Title
 var DEMOS = {
     'People': {
         'Sex and Age': {
