@@ -110,6 +110,35 @@ var DEMOS = {
     }
 }
 
-function selectDemos(dataVoting, dataDemos) {
+// Merges the
+function combineData(dataVoting, dataDemos) {
+    // For each district, tag demo data
+    for (var i = 0; i < dataVoting.length; i++) {
+        let district = dataVoting[i]['id'];
+        console.log(dataVoting[i]);
+        for (var k = 0; k < dataDemos.length; k++) {
+            // Get the config for the demoRow
+            let r = dataDemos[k];
+            if (DEMOS[r['Topic']] && DEMOS[r['Topic']][r['Subject']] && DEMOS[r['Topic']][r['Subject']][r['Title']]) {
+                let rConfig = DEMOS[r['Topic']][r['Subject']][r['Title']];
 
+                let isGrouped = Array.isArray(rConfig);
+                let value = +r[district];
+                if (isGrouped) {
+                    // Contains a group key and optional column rename
+                    let groupKey = rConfig[0];
+                    // Add to array of values or create new array
+                    if (groupKey in dataVoting[i]) {
+                        dataVoting[i][groupKey].push(value);
+                    } else {
+                        dataVoting[i][groupKey] = [value];
+                    }
+                } else {
+                    let groupKey = rConfig;
+                    dataVoting[i][groupKey] = value;
+                }
+            }
+        }
+    }
+    return dataVoting;
 }
