@@ -33,6 +33,7 @@ DESCRIPTION:
 
     function initialize(dataDemos, dataVoting, dataGeo) {
       renderMap(dataGeo);
+	  generateDemographicPies("Age");
       let mergedData = combineData(dataVoting, dataDemos);
       console.log(mergedData);
       initializeVis(dataDemos, dataVoting, dataGeo);
