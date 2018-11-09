@@ -15,6 +15,11 @@ var width;
 var height;
 var legendBlockSize = 20;
 var pieGroup;
+var svgWidth;
+var legend;
+var votingLegend;
+var sidebarWidth = 400;
+var sidebarWords = ["Race", "Age", "Median Income", "Median Age"];
 //this function is complete
 function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
   demoData = dataDemos;
@@ -23,7 +28,8 @@ function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
   countyData = organizedData;
   
   svg = d3.select('#svgMap');
-  width = svg.attr('width');
+  svgWidth = svg.attr('width');
+  width = svgWidth - sidebarWidth;
   height = svg.attr('height');
 	pieGroup = svg.append("g");
     // Geo scaling of data
@@ -31,6 +37,33 @@ function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
         .fitExtent([[0, 0], [width, height]], dataGeo);
     geoGenerator = d3.geoPath()
         .projection(projection);
+		draw_sidebar(sidebarWords);
+	initializeLegends();
+}
+
+function draw_sidebar(words) {
+	var options = words.length;
+	var barHeight = (800 / words.length);
+	var wordG = svg.append('g')
+			.attr("transform", "translate(800, 0)");
+	wordG.selectAll("text")
+	.data(words)
+	.enter()
+	.append("text")
+	.attr("x", 10)
+	.attr("y", function(d, i) {
+		return barHeight * i + 40;
+	})
+	.attr("width", sidebarWidth - 20)
+	.attr("height", barHeight)
+	.style("font-size", 40)
+	.text(function(d) {
+		return d;
+	})
+	.on("click", function(d) {
+		generateDemographicPies(d);
+	});
+	
 }
 
 //this function is complete
@@ -54,6 +87,7 @@ function getGeo(distNum) {
 //this function somewhat works but doesn't work quite right yet, had to stop early, this currently makes a pie graph of the demographics for each 
 //	district, but they don't get positioned properly and the center of the pie chart is in the wrong spot
 function generateDemographicPies(type) {
+	pieGroup.selectAll("g").remove();
 	countyDemoData = [];
 	
 	if (type == "Race") {
@@ -133,14 +167,55 @@ function generateDemographicPies(type) {
 			.attr("d", arcs);
 		}
 		makeLegend(svg, "Under 20", "20 to 34", "35 to 44", "45 to 59", "60 to 74", "75 and above");
+	} else if (type == "Median Income") {
+		var circleGroup = pieGroup.append("g");
+		for (var counter = 1; counter < 17; counter++) {
+			var incomeCircle = circleGroup.append("circle")
+				.attr("transform", function (d, i) {
+					var center = geoGenerator.centroid(getGeo(counter));
+					return "translate (" + center + ")";
+				})
+				.attr("fill", "Black")
+				.attr("r", function() {
+					return parseFloat(countyData[counter - 1]["Median Household Income"]) / 4000;
+				});
+			var incomeText = circleGroup.append("text")
+				.attr("transform", function (d, i) {
+					var center = geoGenerator.centroid(getGeo(counter));
+					center[0] = center[0] + 20;
+					return "translate (" + center + ")";
+				})
+				.attr("fill", "Black")
+				.text(countyData[counter - 1]["Median Household Income"]);
+		}
+	} else if (type == "Median Age") {
+		var circleGroup = pieGroup.append("g");
+		for (var counter = 1; counter < 17; counter++) {
+			var incomeCircle = circleGroup.append("circle")
+				.attr("transform", function (d, i) {
+					var center = geoGenerator.centroid(getGeo(counter));
+					return "translate (" + center + ")";
+				})
+				.attr("fill", "Black")
+				.attr("r", function() {
+					return parseFloat(countyData[counter - 1]["Median Age"]) - 25;
+				});
+			var incomeText = circleGroup.append("text")
+				.attr("transform", function (d, i) {
+					var center = geoGenerator.centroid(getGeo(counter));
+					center[0] = center[0] + 20;
+					return "translate (" + center + ")";
+				})
+				.attr("fill", "Black")
+				.text(countyData[counter - 1]["Median Age"]);
+		}
 	}
 }
 
-function makeLegend(inSVG, firstText, secondText, thirdText, fourthText, fifthText, sixthText) {
-	//makes base area for legend
-	var legend = inSVG.append('g')
+function initializeLegends() {
+	legend = svg.append('g')
 		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
-	var votingLegend = inSVG.append('g')
+	votingLegend = svg.append('g')
 		.attr("transform", "translate(10, " + (height - 150) + ")");
 		
 	votingLegend.append("text")
@@ -162,6 +237,12 @@ function makeLegend(inSVG, firstText, secondText, thirdText, fourthText, fifthTe
 		.attr("width", legendBlockSize)
 		.attr("height", legendBlockSize)
 		.attr("fill", d3.rgb(0, 0, 255));
+}
+
+function makeLegend(inSVG, firstText, secondText, thirdText, fourthText, fifthText, sixthText) {
+	//makes base area for legend
+	legend.selectAll("text").remove();
+	legend.selectAll("rect").remove();
 	
 	if (firstText != "") {
 		legend.append("text")

@@ -6,8 +6,8 @@ function renderMap(dataGeo, organizedData) {
     // Clear previous render
     svg.selectAll('*').remove();
 
-    let width = +svg.attr('width');
-    let height = +svg.attr('height');
+    let width = svg.attr('width') - 400;
+    let height = svg.attr('height');
 
     // Add bounding box
     svg.append('rect')
@@ -15,6 +15,16 @@ function renderMap(dataGeo, organizedData) {
         .attr('y', 0)
         .attr('height', height)
         .attr('width', width)
+        .style('stroke', 'black')
+        .style('fill', 'none')
+        .style('stroke-width', 2);
+		
+    // Add bounding box
+    svg.append('rect')
+        .attr('x', width)
+        .attr('y', 0)
+        .attr('height', height)
+        .attr('width', 400)
         .style('stroke', 'black')
         .style('fill', 'none')
         .style('stroke-width', 2);
