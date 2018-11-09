@@ -1,4 +1,7 @@
-function renderMap(dataGeo) {
+
+var countyData;
+function renderMap(dataGeo, organizedData) {
+	countyData = organizedData;
     let svg = d3.select('#svgMap');
     // Clear previous render
     svg.selectAll('*').remove();
@@ -28,7 +31,9 @@ function renderMap(dataGeo) {
         .enter()
         .append('path')
         .style('stroke', 'black')
-        .style('fill', 'gray')
+        .style('fill', function (d) {
+			return getColor(parseInt(d.properties.CD115FP));
+		})
         .attr('d', geoGenerator);
 
     // Tag features
@@ -43,4 +48,18 @@ function renderMap(dataGeo) {
     //         let center = geoGenerator.centroid(d);
     //         return 'translate (' + center + ')';
     //     });
+}
+
+function getColor(countyID) {
+	var county = countyData[countyID - 1];
+	var votes_d = parseInt(county.votes_D);
+	var votes_r = parseInt(county.votes_R);
+	var voteDiff = votes_d - votes_r;
+	var relativeColor = 255 - 255 * Math.abs(voteDiff) / (votes_r + votes_d);
+	if (voteDiff < 0) {
+		return d3.rgb(255, relativeColor, relativeColor);
+	}
+	else {
+		return d3.rgb(relativeColor, relativeColor, 255);
+	}
 }

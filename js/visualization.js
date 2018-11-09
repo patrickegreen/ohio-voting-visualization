@@ -3,6 +3,7 @@
 var demoData;
 var votingData;
 var geoData;
+var countyData;
 
 var geoGenerator;
 
@@ -15,10 +16,11 @@ var height;
 var legendBlockSize = 20;
 var pieGroup;
 //this function is complete
-function initializeVis(dataDemos, dataVoting, dataGeo) {
+function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
   demoData = dataDemos;
   votingData = dataVoting;
   geoData = dataGeo;
+  countyData = organizedData;
   
   svg = d3.select('#svgMap');
   width = svg.attr('width');
@@ -138,6 +140,28 @@ function makeLegend(inSVG, firstText, secondText, thirdText, fourthText, fifthTe
 	//makes base area for legend
 	var legend = inSVG.append('g')
 		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
+	var votingLegend = inSVG.append('g')
+		.attr("transform", "translate(10, " + (height - 150) + ")");
+		
+	votingLegend.append("text")
+		.attr("transform", "translate(0, 115)")
+		.text("District voted republican")
+		.attr("fill", d3.rgb(255, 0, 0));
+	votingLegend.append("rect")
+		.attr("transform", "translate(175,100)")
+		.attr("width", legendBlockSize)
+		.attr("height", legendBlockSize)
+		.attr("fill", d3.rgb(255, 0, 0));
+		
+	votingLegend.append("text")
+		.attr("transform", "translate(0, 140)")
+		.text("District voted democrat")
+		.attr("fill", d3.rgb(0, 0, 255));
+	votingLegend.append("rect")
+		.attr("transform", "translate(175,125)")
+		.attr("width", legendBlockSize)
+		.attr("height", legendBlockSize)
+		.attr("fill", d3.rgb(0, 0, 255));
 	
 	if (firstText != "") {
 		legend.append("text")
