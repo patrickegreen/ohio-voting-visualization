@@ -19,7 +19,7 @@ var svgWidth;
 var legend;
 var votingLegend;
 var sidebarWidth = 400;
-var sidebarWords = ["Race", "Age", "Median Income", "Median Age"];
+var sidebarWords = ["Race", "Age", "Median Income", "Median Age" /* Add more words here to add more visualizations */];
 //this function is complete
 function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
   demoData = dataDemos;

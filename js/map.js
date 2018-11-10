@@ -1,7 +1,24 @@
 
 var countyData;
+
+var tooltip;
+	
 function renderMap(dataGeo, organizedData) {
 	countyData = organizedData;
+	tooltip = d3.select("body")
+	.append("div")
+	.style("width", "130px")
+	.style("height", "60px")
+	.style("padding", "2px")
+	.style("background", "Bisque")
+	.style("border", "0px")
+	.style("border-radius", "8px")
+	.style("text-align", "center")
+	.style("position", "absolute")
+	.style("z-index", "10")
+	.style("visibility", "hidden")
+	.text("Future Votes!");
+	
     let svg = d3.select('#svgMap');
     // Clear previous render
     svg.selectAll('*').remove();
@@ -44,7 +61,19 @@ function renderMap(dataGeo, organizedData) {
         .style('fill', function (d) {
 			return getColor(parseInt(d.properties.CD115FP));
 		})
-        .attr('d', geoGenerator);
+        .attr('d', geoGenerator)
+		.on("mouseover", function(d) {
+			var votes = getVotes(parseInt(d.properties.CD115FP));
+			return tooltip.html("District " + d.properties.CD115FP + " votes:<br/>Dem: " + votes[0] + "<br/>Rep: " + votes[1])
+			.style("Visibility", "Visible");
+		})
+		.on("mousemove", function() {
+			return tooltip.style("top", (event.pageY-10 +"px"))
+			.style("left", (event.pageX+10 +"px"));
+		})
+		.on("mouseout", function(d) {
+			return tooltip.style("Visibility", "hidden");
+		});
 
     // Tag features
     // let texts = svg.selectAll('text')
@@ -72,4 +101,10 @@ function getColor(countyID) {
 	else {
 		return d3.rgb(relativeColor, relativeColor, 255);
 	}
+}
+
+function getVotes(countyID) {
+	var county = countyData[countyID - 1];
+	return [parseInt(county.votes_D), parseInt(county.votes_R)];
+	
 }
