@@ -1,10 +1,28 @@
 
-var countyData;
+var districtData;
 
 var tooltip;
-	
-function renderMap(dataGeo, organizedData) {
-	countyData = organizedData;
+
+var CENTROIDS = {
+    1: [39.418203, -84.166441],
+    2: [39.003667, -83.454167],
+    3: [40.084454, -82.942875],
+    4: [40.534428, -84.126369],
+    5: [41.377887, -84.126369],
+    6: [40.174982, -81.140202],
+    7: [40.421820, -81.888509],
+    8: [40.087679, -84.632341],
+    9: [41.534706, -82.721268],
+    10: [39.699015, -83.989342],
+    11: [41.555293, -81.581789],
+    12: [40.561171, -82.727309],
+    13: [41.204422, -80.777782],
+    14: [41.599710, -80.959752],
+    15: [39.621678, -82.535068],
+    16: [40.872652, -81.851527],
+}
+function renderMap(dataGeo, mergedData) {
+	districtData = mergedData;
 	tooltip = d3.select("body")
 	.append("div")
 	.style("width", "130px")
@@ -89,10 +107,10 @@ function renderMap(dataGeo, organizedData) {
     //     });
 }
 
-function getColor(countyID) {
-	var county = countyData[countyID - 1];
-	var votes_d = parseInt(county.votes_D);
-	var votes_r = parseInt(county.votes_R);
+function getColor(districtID) {
+	var district = districtData[districtID - 1];
+	var votes_d = parseInt(district.votes_D);
+	var votes_r = parseInt(district.votes_R);
 	var voteDiff = votes_d - votes_r;
 	var relativeColor = 255 - 255 * Math.abs(voteDiff) / (votes_r + votes_d);
 	if (voteDiff < 0) {
@@ -103,8 +121,8 @@ function getColor(countyID) {
 	}
 }
 
-function getVotes(countyID) {
-	var county = countyData[countyID - 1];
-	return [parseInt(county.votes_D), parseInt(county.votes_R)];
+function getVotes(districtID) {
+	var district = districtData[districtID - 1];
+	return [parseInt(district.votes_D), parseInt(district.votes_R)];
 	
 }

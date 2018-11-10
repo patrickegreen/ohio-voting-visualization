@@ -115,7 +115,6 @@ function combineData(dataVoting, dataDemos) {
     // For each district, tag demo data
     for (var i = 0; i < dataVoting.length; i++) {
         let district = dataVoting[i]['id'];
-        console.log(dataVoting[i]);
         for (var k = 0; k < dataDemos.length; k++) {
             // Get the config for the demoRow
             let r = dataDemos[k];

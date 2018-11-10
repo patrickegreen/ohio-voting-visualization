@@ -3,11 +3,11 @@
 var demoData;
 var votingData;
 var geoData;
-var countyData;
+var districtData;
 
 var geoGenerator;
 
-var countyDemoData;
+var districtDemoData;
 var pieRadius = 25;
 var colors = [ "Red", "Chartreuse", "Blue", "Brown", "Gold", "Cyan", "Green"];
 var svg;
@@ -20,25 +20,31 @@ var legend;
 var votingLegend;
 var sidebarWidth = 400;
 var sidebarWords = ["Race", "Age", "Median Income", "Median Age" /* Add more words here to add more visualizations */];
+var districtCentroids = {};
 //this function is complete
 function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
-  demoData = dataDemos;
-  votingData = dataVoting;
-  geoData = dataGeo;
-  countyData = organizedData;
-  
-  svg = d3.select('#svgMap');
-  svgWidth = svg.attr('width');
-  width = svgWidth - sidebarWidth;
-  height = svg.attr('height');
+	demoData = dataDemos;
+	votingData = dataVoting;
+	geoData = dataGeo;
+	districtData = organizedData;
+
+	svg = d3.select('#svgMap');
+	svgWidth = svg.attr('width');
+	width = svgWidth - sidebarWidth;
+	height = svg.attr('height');
 	pieGroup = svg.append("g");
-    // Geo scaling of data
-    let projection = d3.geoEquirectangular()
-        .fitExtent([[0, 0], [width, height]], dataGeo);
-    geoGenerator = d3.geoPath()
-        .projection(projection);
+	// Geo scaling of data
+	let projection = d3.geoEquirectangular()
+		.fitExtent([[0, 0], [width, height]], dataGeo);
+	geoGenerator = d3.geoPath()
+		.projection(projection);
 		draw_sidebar(sidebarWords);
 	initializeLegends();
+	// Manually override the district centroids for pie charts
+	for (var dID in CENTROIDS) {
+		let latlng = CENTROIDS[dID];
+		districtCentroids[dID] = projection([latlng[1], latlng[0]]);
+	}
 }
 
 function draw_sidebar(words) {
@@ -88,7 +94,7 @@ function getGeo(distNum) {
 //	district, but they don't get positioned properly and the center of the pie chart is in the wrong spot
 function generateDemographicPies(type) {
 	pieGroup.selectAll("g").remove();
-	countyDemoData = [];
+	districtDemoData = [];
 	
 	if (type == "Race") {
 		//demographic rows for races
@@ -103,22 +109,21 @@ function generateDemographicPies(type) {
 		
 		
 		for (var counter = 1; counter < 17; counter++) {
-			var countyRow = [parseInt(whiteRow[counter + ""]), parseInt(blackRow[counter + ""]), parseInt(asianRow[counter + ""]), parseInt(americanNativeRow[counter + ""]) + 
+			var districtRow = [parseInt(whiteRow[counter + ""]), parseInt(blackRow[counter + ""]), parseInt(asianRow[counter + ""]), parseInt(americanNativeRow[counter + ""]) +
 				parseInt(pacificIslanderRow[counter + ""]) + parseInt(otherRow[counter + ""]), parseInt(twoPlusRow[counter + ""])];
-			countyDemoData.push(countyRow);
+			districtDemoData.push(districtRow);
 			var pieMaker = d3.pie();
-			var countyPie = pieMaker(countyRow);
+			var districtPie = pieMaker(districtRow);
 			var arcs = d3.arc()
 			.innerRadius(0)
 			.outerRadius(pieRadius);
-			var countyPieGroup = pieGroup.append("g");
-			countyPieGroup.selectAll("path")
-			.data(countyPie)
+			var districtPieGroup = pieGroup.append("g");
+			districtPieGroup.selectAll("path")
+			.data(districtPie)
 			.enter()
 			.append("path")
 			.attr("transform", function (d, i) {
-				var center = geoGenerator.centroid(getGeo(counter));
-				return "translate (" + center + ")";
+				return "translate (" + districtCentroids[counter] + ")";
 			})
 			.attr("fill", function(d, i) {
 				return colors[i];
@@ -142,24 +147,23 @@ function generateDemographicPies(type) {
 		let years85Plus = getDemoRow("Sex and Age", "85 years and over");
 		
 		for (var counter = 1; counter < 17; counter++) {
-			var countyRow = [parseInt(yearsUnder5[counter + ""]) + parseInt(years5To9[counter + ""]) + parseInt(years10To14[counter + ""]) + parseInt(years15To19[counter + ""]), 
+			var districtRow = [parseInt(yearsUnder5[counter + ""]) + parseInt(years5To9[counter + ""]) + parseInt(years10To14[counter + ""]) + parseInt(years15To19[counter + ""]),
 				parseInt(years20To24[counter + ""]) + parseInt(years25To34[counter + ""]), parseInt(years35To44[counter + ""]), parseInt(years45To54[counter + ""]) + 
 				parseInt(years55To59[counter + ""]), parseInt(years60To64[counter + ""]) + parseInt(years65To74[counter + ""]), 
 				parseInt(years75To84[counter + ""]) + parseInt(years85Plus[counter + ""])];
-			countyDemoData.push(countyRow);
+			districtDemoData.push(districtRow);
 			var pieMaker = d3.pie();
-			var countyPie = pieMaker(countyRow);
+			var districtPie = pieMaker(districtRow);
 			var arcs = d3.arc()
 			.innerRadius(0)
 			.outerRadius(pieRadius);
-			var countyPieGroup = pieGroup.append("g");
-			countyPieGroup.selectAll("path")
-			.data(countyPie)
+			var districtPieGroup = pieGroup.append("g");
+			districtPieGroup.selectAll("path")
+			.data(districtPie)
 			.enter()
 			.append("path")
 			.attr("transform", function (d, i) {
-				var center = geoGenerator.centroid(getGeo(counter));
-				return "translate (" + center + ")";
+				return "translate (" + districtCentroids[counter] + ")";
 			})
 			.attr("fill", function(d, i) {
 				return colors[i];
@@ -172,42 +176,38 @@ function generateDemographicPies(type) {
 		for (var counter = 1; counter < 17; counter++) {
 			var incomeCircle = circleGroup.append("circle")
 				.attr("transform", function (d, i) {
-					var center = geoGenerator.centroid(getGeo(counter));
-					return "translate (" + center + ")";
+					return "translate (" + districtCentroids[counter] + ")";
 				})
 				.attr("fill", "Black")
 				.attr("r", function() {
-					return parseFloat(countyData[counter - 1]["Median Household Income"]) / 4000;
+					return parseFloat(districtData[counter - 1]["Median Household Income"]) / 4000;
 				});
 			var incomeText = circleGroup.append("text")
 				.attr("transform", function (d, i) {
-					var center = geoGenerator.centroid(getGeo(counter));
-					center[0] = center[0] + 20;
-					return "translate (" + center + ")";
+					let center = districtCentroids[counter];
+					return "translate (" + [center[0] + 20, center[1]] + ")";
 				})
 				.attr("fill", "Black")
-				.text(countyData[counter - 1]["Median Household Income"]);
+				.text(districtData[counter - 1]["Median Household Income"]);
 		}
 	} else if (type == "Median Age") {
 		var circleGroup = pieGroup.append("g");
 		for (var counter = 1; counter < 17; counter++) {
 			var incomeCircle = circleGroup.append("circle")
 				.attr("transform", function (d, i) {
-					var center = geoGenerator.centroid(getGeo(counter));
-					return "translate (" + center + ")";
+					return "translate (" + districtCentroids[counter] + ")";
 				})
 				.attr("fill", "Black")
 				.attr("r", function() {
-					return parseFloat(countyData[counter - 1]["Median Age"]) - 25;
+					return parseFloat(districtData[counter - 1]["Median Age"]) - 25;
 				});
 			var incomeText = circleGroup.append("text")
 				.attr("transform", function (d, i) {
-					var center = geoGenerator.centroid(getGeo(counter));
-					center[0] = center[0] + 20;
-					return "translate (" + center + ")";
+					let center = districtCentroids[counter];
+					return "translate (" + [center[0] + 20, center[1]] + ")";
 				})
 				.attr("fill", "Black")
-				.text(countyData[counter - 1]["Median Age"]);
+				.text(districtData[counter - 1]["Median Age"]);
 		}
 	}
 }
