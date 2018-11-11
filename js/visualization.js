@@ -1,14 +1,8 @@
-//This file is not complete, it is what I was able to get done Wednesday
+// Manage all visualization on the map
 
-var demoData;
-var votingData;
-var geoData;
 var districtData;
 var legendConfig;
-
 var geoGenerator;
-
-var districtDemoData;
 var pieRadius = 25;
 var colors = [ "Red", "Chartreuse", "Blue", "Brown", "Gold", "Cyan", "Green"];
 var svg;
@@ -21,12 +15,10 @@ var legend;
 var votingLegend;
 var sidebarWidth = 400;
 var districtCentroids = {};
-//this function is complete
-function initializeVis(dataDemos, dataVoting, dataGeo, organizedData, legends) {
-	demoData = dataDemos;
-	votingData = dataVoting;
-	geoData = dataGeo;
-	districtData = organizedData;
+
+// Create global variables for the svg attributes and dataset
+function initializeVis(dataGeo, dataDistrict, legends) {
+	districtData = dataDistrict;
 	legendConfig = legends;
 
 	svg = d3.select('#svgMap');
@@ -84,132 +76,33 @@ function draw_sidebar(options) {
 	
 }
 
-//this function is complete
-function getDemoRow(subject, title) {
-	for (var counter = 0; counter < demoData.length; counter++) {
-		if (demoData[counter]["Subject"] == subject && demoData[counter]["Title"] == title) {
-			return demoData[counter];
-		}
-	}
-}
-
-//this function is complete
-function getGeo(distNum) {
-	for (var counter = 0; counter < geoData.features.length; counter++) {
-		if (parseInt(geoData.features[counter].properties.CD115FP) == parseInt(distNum)) {
-			return geoData.features[counter];
-		}
-	}
-}
-
-//this function somewhat works but doesn't work quite right yet, had to stop early, this currently makes a pie graph of the demographics for each 
-//	district, but they don't get positioned properly and the center of the pie chart is in the wrong spot
+// Generate pie charts for the grouped data
 function generateDemographicPies(type) {
 	pieGroup.selectAll("g").remove();
 
-	if (type == "Race") {
-	    // Create a pie for each district
-		for (var idx = 0; idx < districtData.length; idx++) {
-			let districtID = idx + 1;
-			let districtRow = districtData[idx][type];
-			let pieMaker = d3.pie();
-			let districtPie = pieMaker(districtRow);
-			let arcs = d3.arc()
-                .innerRadius(0)
-                .outerRadius(pieRadius);
-			let districtPieGroup = pieGroup.append("g");
-			districtPieGroup.selectAll("path")
-                .data(districtPie)
-                .enter()
-                .append("path")
-                .attr("transform", function (d, i) {
-                    return "translate (" + districtCentroids[districtID] + ")";
-                })
-                .attr("fill", function(d, i) {
-                    return colors[i];
-                })
-                .attr("d", arcs);
-		}
-		// makeLegend(svg, "White", "Black or African American", "Asian", "Other Ethnicity", "Multiracial", "");
-	} else if (type == "Age") {
-		let yearsUnder5 = getDemoRow("Sex and Age", "Under 5 years");
-		let years5To9 = getDemoRow("Sex and Age", "5 to 9 years");
-		let years10To14 = getDemoRow("Sex and Age", "10 to 14 years");
-		let years15To19 = getDemoRow("Sex and Age", "15 to 19 years");
-		let years20To24 = getDemoRow("Sex and Age", "20 to 24 years");
-		let years25To34 = getDemoRow("Sex and Age", "25 to 34 years");
-		let years35To44 = getDemoRow("Sex and Age", "35 to 44 years");
-		let years45To54 = getDemoRow("Sex and Age", "45 to 54 years");
-		let years55To59 = getDemoRow("Sex and Age", "55 to 59 years");
-		let years60To64 = getDemoRow("Sex and Age", "60 to 64 years");
-		let years65To74 = getDemoRow("Sex and Age", "65 to 74 years");
-		let years75To84 = getDemoRow("Sex and Age", "75 to 84 years");
-		let years85Plus = getDemoRow("Sex and Age", "85 years and over");
-		
-		for (var counter = 1; counter < 17; counter++) {
-			var districtRow = [parseInt(yearsUnder5[counter + ""]) + parseInt(years5To9[counter + ""]) + parseInt(years10To14[counter + ""]) + parseInt(years15To19[counter + ""]),
-				parseInt(years20To24[counter + ""]) + parseInt(years25To34[counter + ""]), parseInt(years35To44[counter + ""]), parseInt(years45To54[counter + ""]) + 
-				parseInt(years55To59[counter + ""]), parseInt(years60To64[counter + ""]) + parseInt(years65To74[counter + ""]), 
-				parseInt(years75To84[counter + ""]) + parseInt(years85Plus[counter + ""])];
-			districtDemoData.push(districtRow);
-			var pieMaker = d3.pie();
-			var districtPie = pieMaker(districtRow);
-			var arcs = d3.arc()
+	// Create a pie for each district
+	for (var idx = 0; idx < districtData.length; idx++) {
+		let districtID = idx + 1;
+		let districtRow = districtData[idx][type];
+		let pieMaker = d3.pie();
+		let districtPie = pieMaker(districtRow);
+		let arcs = d3.arc()
 			.innerRadius(0)
 			.outerRadius(pieRadius);
-			var districtPieGroup = pieGroup.append("g");
-			districtPieGroup.selectAll("path")
+		let districtPieGroup = pieGroup.append("g");
+		districtPieGroup.selectAll("path")
 			.data(districtPie)
 			.enter()
 			.append("path")
 			.attr("transform", function (d, i) {
-				return "translate (" + districtCentroids[counter] + ")";
+				return "translate (" + districtCentroids[districtID] + ")";
 			})
 			.attr("fill", function(d, i) {
 				return colors[i];
 			})
 			.attr("d", arcs);
-		}
-		makeLegend(svg, "Under 20", "20 to 34", "35 to 44", "45 to 59", "60 to 74", "75 and above");
-	} else if (type == "Median Income") {
-		var circleGroup = pieGroup.append("g");
-		for (var counter = 1; counter < 17; counter++) {
-			var incomeCircle = circleGroup.append("circle")
-				.attr("transform", function (d, i) {
-					return "translate (" + districtCentroids[counter] + ")";
-				})
-				.attr("fill", "Black")
-				.attr("r", function() {
-					return parseFloat(districtData[counter - 1]["Median Household Income"]) / 4000;
-				});
-			var incomeText = circleGroup.append("text")
-				.attr("transform", function (d, i) {
-					let center = districtCentroids[counter];
-					return "translate (" + [center[0] + 20, center[1]] + ")";
-				})
-				.attr("fill", "Black")
-				.text(districtData[counter - 1]["Median Household Income"]);
-		}
-	} else if (type == "Median Age") {
-		var circleGroup = pieGroup.append("g");
-		for (var counter = 1; counter < 17; counter++) {
-			var incomeCircle = circleGroup.append("circle")
-				.attr("transform", function (d, i) {
-					return "translate (" + districtCentroids[counter] + ")";
-				})
-				.attr("fill", "Black")
-				.attr("r", function() {
-					return parseFloat(districtData[counter - 1]["Median Age"]) - 25;
-				});
-			var incomeText = circleGroup.append("text")
-				.attr("transform", function (d, i) {
-					let center = districtCentroids[counter];
-					return "translate (" + [center[0] + 20, center[1]] + ")";
-				})
-				.attr("fill", "Black")
-				.text(districtData[counter - 1]["Median Age"]);
-		}
 	}
+	makeLegend(type);
 }
 
 function initializeLegends() {
@@ -239,80 +132,24 @@ function initializeLegends() {
 		.attr("fill", d3.rgb(0, 0, 255));
 }
 
-function makeLegend(inSVG, firstText, secondText, thirdText, fourthText, fifthText, sixthText) {
-	//makes base area for legend
+function makeLegend(type) {
+	// Clear area for legend
 	legend.selectAll("text").remove();
 	legend.selectAll("rect").remove();
-	
-	if (firstText != "") {
+	options = legendConfig[type];
+
+	for (var i = 0; i < options.length; i++) {
+		let textOffset = 15 + 25*i;
+		let colorOffset = 25*i;
 		legend.append("text")
-			.attr("transform", "translate(0, 15)")
-			.text(firstText)
-			.attr("fill", colors[0]);
-			legend.append("rect")
-			.attr("transform", "translate(175,0)")
+			.attr("transform", "translate(0, " + textOffset + ")")
+			.text(options[i])
+			.attr("fill", colors[i]);
+		legend.append("rect")
+			.attr("transform", "translate(175," + colorOffset + ")")
 			.attr("width", legendBlockSize)
 			.attr("height", legendBlockSize)
-			.attr("fill", colors[0]);
-	}
-		
-	if (secondText != "") {
-		legend.append("text")
-			.attr("transform", "translate(0, 40)")
-			.text(secondText)
-			.attr("fill", colors[1]);
-			legend.append("rect")
-			.attr("transform", "translate(175,25)")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[1]);
-	}
-		
-	if (thirdText != "") {
-		legend.append("text")
-			.attr("transform", "translate(0, 65)")
-			.text(thirdText)
-			.attr("fill", colors[2]);
-			legend.append("rect")
-			.attr("transform", "translate(175,50)")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[2]);
-	}
-		
-	if (fourthText != "") {
-		legend.append("text")
-			.attr("transform", "translate(0, 90)")
-			.text(fourthText)
-			.attr("fill", colors[3]);
-			legend.append("rect")
-			.attr("transform", "translate(175,75)")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[3]);
-	}
-		
-	if (fifthText != "") {
-		legend.append("text")
-			.attr("transform", "translate(0, 115)")
-			.text(fifthText)
-			.attr("fill", colors[4]);
-			legend.append("rect")
-			.attr("transform", "translate(175,100)")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[4]);
-	}
-	
-	if (sixthText != "") {
-		legend.append("text")
-			.attr("transform", "translate(0, 140)")
-			.text(sixthText)
-			.attr("fill", colors[5]);
-			legend.append("rect")
-			.attr("transform", "translate(175,125)")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[5]);
+			.attr("fill", colors[i]);
+
 	}
 }
