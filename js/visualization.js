@@ -16,7 +16,7 @@ var svg;
 var width;
 var height;
 var legendBlockSize = 20;
-var pieGroup;
+var visualizationGroup;
 var svgWidth;
 var legend;
 var votingLegend;
@@ -32,7 +32,7 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 	svgWidth = svg.attr('width');
 	width = svgWidth - sidebarWidth;
 	height = svg.attr('height');
-	pieGroup = svg.append("g");
+	visualizationGroup = svg.append("g");
 	// Geo scaling of data
 	let projection = d3.geoEquirectangular()
 		.fitExtent([[0, 0], [width, height]], dataGeo);
@@ -60,27 +60,54 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 }
 
 function draw_sidebar(groupOptions, flatOptions) {
-	let barHeight = (800 / groupOptions.length);
-	let wordG = svg.append('g')
-			.attr("transform", "translate(800, 0)");
-	wordG.selectAll("text")
+    let totalOptions = groupOptions.length + flatOptions.length;
+	let spacing = (800 / totalOptions);
+	let options = svg.append('g')
+        .attr("transform", "translate(800, 0)");
+	options.selectAll("text.groupedOptions")
         .data(groupOptions)
         .enter()
-        .append("text")
+    .append("text")
         .attr("x", 10)
         .attr("y", function(d, i) {
-            return barHeight * i + 40;
+            return spacing * i + 40;
         })
         .attr("width", sidebarWidth - 20)
-        .attr("height", barHeight)
+        .attr("height", spacing)
 		.attr('font-family', 'cursive')
+        .attr('class', 'groupedOptions demoOptions')
 		.style('font-weight', 'bold')
-        .style("font-size", 40)
+        .style("font-size", 30)
+        .style('text-decoration', 'underline')
         .text(function(d) {
             return d;
         })
         .on("click", function(d) {
+            d3.selectAll('text.demoOptions').style('fill', 'black');
+            d3.select(this).style('fill', '#26E24A');
             generateDemographicPies(d);
+        });
+	options.selectAll("text.flatOptions")
+        .data(flatOptions)
+        .enter()
+    .append("text")
+        .attr("x", 10)
+        .attr("y", function(d, i) {
+            return spacing * i + 40 + spacing * groupOptions.length;
+        })
+        .attr("width", sidebarWidth - 20)
+        .attr("height", spacing)
+		.attr('font-family', 'cursive')
+        .attr('class', 'flatOptions demoOptions')
+		.style('font-weight', 'bold')
+        .style("font-size", 30)
+        .text(function(d) {
+            return d;
+        })
+        .on("click", function(d) {
+            d3.selectAll('text.demoOptions').style('fill', 'black');
+            d3.select(this).style('fill', '#26E24A');
+            generateSizedCircles(d);
         });
 	
 }
@@ -127,7 +154,7 @@ function initializeLegends() {
 
 // Generate pie charts for the grouped data
 function generateDemographicPies(type) {
-	pieGroup.selectAll("g").remove();
+	visualizationGroup.selectAll("g").remove();
 
 	// Create a pie for each district
 	for (var idx = 0; idx < districtData.length; idx++) {
@@ -138,7 +165,7 @@ function generateDemographicPies(type) {
 		let arcs = d3.arc()
 			.innerRadius(0)
 			.outerRadius(pieRadius);
-		let districtPieGroup = pieGroup.append("g");
+		let districtPieGroup = visualizationGroup.append("g");
 		districtPieGroup.selectAll("path")
 			.data(districtPie)
 			.enter()
@@ -150,10 +177,37 @@ function generateDemographicPies(type) {
 				return colors[i];
 			})
 			.attr("d", arcs)
+            .attr('class', 'pieChart')
 			.style('stroke', 'black')
 			.style('stroke-width', 2);
 	}
 	makeLegend(type);
+}
+
+function generateSizedCircles(type) {
+	visualizationGroup.selectAll("g").remove();
+    let circleGroup = visualizationGroup.append("g");
+    let values = districtData.map(function(o) { return o[type]; });
+    let mean = d3.mean(values);
+    let stdev = d3.deviation(values);
+	let sizeScale = d3.scaleLinear()
+		.domain([mean - 3*stdev, mean + 3*stdev])
+      	.range([10, 40]);
+	for (var idx = 0; idx < districtData.length; idx++) {
+		let districtID = idx + 1;
+		let value = districtData[idx][type];
+        let circle = circleGroup.append("circle")
+            .attr("transform", function (d, i) {
+                return "translate (" + districtCentroids[idx + 1] + ")";
+            })
+            .attr("fill", "#26E24A")
+            .attr("r", function() {
+                return sizeScale(value);
+            })
+			.style('stroke', 'black')
+			.style('stroke-width', 2);
+    makeLegend(type);
+    }
 }
 
 // Generate Legend for grouped data

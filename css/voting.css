@@ -9,3 +9,6 @@ a.democrat {
 a.independent {
     color: green;
 }
+path.pieChart, text.demoOptions {
+    cursor: pointer;
+}

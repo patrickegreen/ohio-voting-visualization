@@ -94,7 +94,7 @@ var DEMOS = {
             '$200,000 or more': ['Income Range', '$150,000 or more'],
         },
         'Percentage of Families and People Whose Income in the Past 12 Months is Below the Poverty Level': {
-            'All people': 'Percentage of Families Below Poverty Level',
+            'All people': 'Family Poverty Rate',
         }
     },
     'Education': {
