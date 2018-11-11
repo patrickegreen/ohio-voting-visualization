@@ -181,7 +181,7 @@ function generateDemographicPies(type) {
 			.style('stroke', 'black')
 			.style('stroke-width', 2);
 	}
-	makeLegend(type);
+	makeLegend(type, [], null);
 }
 
 function generateSizedCircles(type) {
@@ -206,39 +206,70 @@ function generateSizedCircles(type) {
             })
 			.style('stroke', 'black')
 			.style('stroke-width', 2);
-    makeLegend(type);
+    makeLegend(type, values, sizeScale);
     }
 }
 
 // Generate Legend for grouped data
-function makeLegend(type) {
+function makeLegend(type, values, sizeScale) {
 	// Clear area for legend
 	legend.selectAll("text").remove();
 	legend.selectAll("rect").remove();
+	legend.selectAll("circle").remove();
 	options = legendConfig[type];
-	legend.append('text')
-		.attr("transform", "translate(0, -15)")
-		.text('Demo Legend')
-		.attr('fill', 'black')
-		.attr('font-size', 24)
-		.attr('font-family', 'cursive')
-		.style('font-weight', 'bold');
 
-	for (var i = 0; i < options.length; i++) {
-		let textOffset = 15 + 25*i;
-		let colorOffset = 25*i;
-		legend.append("text")
-			.attr("transform", "translate(0, " + textOffset + ")")
-			.text(options[i])
-			.attr('fill', 'black')
-			.style('font-weight', 'bold');
-		legend.append("rect")
-			.attr("transform", "translate(175," + colorOffset + ")")
-			.attr("width", legendBlockSize)
-			.attr("height", legendBlockSize)
-			.attr("fill", colors[i])
-			.style('stroke', 'black')
-			.style('stroke-width', 2);
+	// Grouped colors
+    if (options.length) {
+        legend.append('text')
+            .attr("transform", "translate(0, -15)")
+            .text('Demo Legend')
+            .attr('fill', 'black')
+            .attr('font-size', 24)
+            .attr('font-family', 'cursive')
+            .style('font-weight', 'bold');
 
-	}
+        for (var i = 0; i < options.length; i++) {
+            let textOffset = 15 + 25 * i;
+            let colorOffset = 25 * i;
+            legend.append("text")
+                .attr("transform", "translate(0, " + textOffset + ")")
+                .text(options[i])
+                .attr('fill', 'black')
+                .style('font-weight', 'bold');
+            legend.append("rect")
+                .attr("transform", "translate(175," + colorOffset + ")")
+                .attr("width", legendBlockSize)
+                .attr("height", legendBlockSize)
+                .attr("fill", colors[i])
+                .style('stroke', 'black')
+                .style('stroke-width', 2);
+        }
+	} else {
+        // Size Scale
+        let mean = d3.mean(values);
+        let stdev = d3.deviation(values);
+        let offset = -90;
+        let textAdjust = 2;
+        if (!options.length) {
+            for (var i = -2; i < 3; i++) {
+                let value = mean + i * stdev;
+                let radius = sizeScale(value);
+                value = d3.max([value, 0]);  // avoid negatives for stdev range
+                let textOffset = offset + textAdjust;
+                legend.append("text")
+                    .attr("transform", "translate(130, " + textOffset + ")")
+                    .text(value.toFixed(1))
+                    .attr('fill', 'black')
+                    .style('font-weight', 'bold');
+                legend.append("circle")
+                    .attr("transform", "translate(85," + offset + ")")
+                    .attr("fill", "#26E24A")
+                    .attr("r", radius)
+                    .style('stroke', 'black')
+                    .style('stroke-width', 2);
+                offset = offset + 2*radius + 5;
+                textAdjust = textAdjust + 2;
+            }
+        }
+    }
 }
