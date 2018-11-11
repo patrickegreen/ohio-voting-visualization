@@ -4,7 +4,6 @@ var districtData;
 var legendConfig;
 var geoGenerator;
 var pieRadius = 25;
-// var colors = ["Green","Cyan", "Gold", "Red", "Chartreuse", "Blue"];
 var colors = [
 	'#7030A0',
 	'#26E24A',

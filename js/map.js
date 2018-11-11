@@ -21,21 +21,21 @@ var CENTROIDS = {
     15: [39.621678, -82.535068],
     16: [40.872652, -81.851527],
 }
-function renderMap(dataGeo, mergedData) {
-	districtData = mergedData;
+function renderMap(dataGeo, data) {
+	districtData = data;
 	tooltip = d3.select("body")
-	.append("div")
-	.style("width", "130px")
-	.style("height", "60px")
-	.style("padding", "2px")
-	.style("background", "Bisque")
-	.style("border", "0px")
-	.style("border-radius", "8px")
-	.style("text-align", "center")
-	.style("position", "absolute")
-	.style("z-index", "10")
-	.style("visibility", "hidden")
-	.text("Future Votes!");
+        .append("div")
+        .style("width", "160px")
+        .style("height", "80px")
+        .style("padding", "2px")
+        .style("background", "Bisque")
+        .style("border", "0px")
+        .style("border-radius", "8px")
+        .style("text-align", "center")
+        .style("position", "absolute")
+        .style("z-index", "10")
+        .style("visibility", "hidden")
+        .text("Future Votes!");
 	
     let svg = d3.select('#svgMap');
     // Clear previous render
@@ -45,6 +45,13 @@ function renderMap(dataGeo, mergedData) {
     let height = svg.attr('height');
 
     // Add bounding box
+    svg.append('text')
+		.attr("transform", "translate(15, 40)")
+		.text('Ohio Congressional Voting and Demographics (2016 Election)')
+		.attr('fill', 'black')
+		.attr('font-size', 24)
+		.attr('font-family', 'cursive')
+		.style('font-weight', 'bold');
     svg.append('rect')
         .attr('x', 0)
         .attr('y', 0)
@@ -80,16 +87,28 @@ function renderMap(dataGeo, mergedData) {
 			return getColor(parseInt(d.properties.CD115FP));
 		})
         .attr('d', geoGenerator)
-		.on("mouseover", function(d) {
-			var votes = getVotes(parseInt(d.properties.CD115FP));
-			return tooltip.html("District " + d.properties.CD115FP + " votes:<br/>Dem: " + votes[0] + "<br/>Rep: " + votes[1])
-			.style("Visibility", "Visible");
+		.on("mouseover", function(d, i) {
+		    let districtID = parseInt(d.properties.CD115FP);
+		    let district = districtData[districtID-1];
+			let votesR = +district.votes_R;
+			let votesD = +district.votes_D;
+			let votesI = +district.votes_I;
+			let total = votesR + votesD + votesI;
+			d3.select(this).style('stroke-width', 4);
+			return tooltip.html(
+			    "<strong>District " + d.properties.CD115FP + " votes:<br/></strong>" +
+                "<a class='republican'><strong>Rep:</strong></a> " + votesR + " (" + (100.0 * votesR / total).toFixed(1) + "%)" + "<br/>" +
+                "<a class='democrat'><strong>Dem:</strong></a> " + votesD + " (" + (100.0 * votesD / total).toFixed(1) + "%)" + "<br/>" +
+                "<a class='independent'><strong>Ind:</strong></a> " + votesI + " (" + (100.0 * votesI / total).toFixed(1) + "%)"
+            )
+			    .style("Visibility", "Visible");
 		})
 		.on("mousemove", function() {
 			return tooltip.style("top", (event.pageY-10 +"px"))
 			.style("left", (event.pageX+10 +"px"));
 		})
 		.on("mouseout", function(d) {
+			d3.select(this).style('stroke-width', 1);
 			return tooltip.style("Visibility", "hidden");
 		});
 }
@@ -97,23 +116,24 @@ function renderMap(dataGeo, mergedData) {
 // Shade the district based on the degree votes favor one party or the other
 //  scales red >> white >> blue
 function getColor(districtID) {
-	var district = districtData[districtID - 1];
-	var votes_d = parseInt(district.votes_D);
-	var votes_r = parseInt(district.votes_R);
-	var voteDiff = votes_d - votes_r;
-	var relativeColor = 255 - 255 * Math.abs(voteDiff) / (votes_r + votes_d);
-	if (voteDiff < 0) {
-		return d3.rgb(255, relativeColor, relativeColor);
-	} else if (voteDiff > 0) {
-		return d3.rgb(relativeColor, relativeColor, 255);
-	} else {
-	    return d3.rgb(255, 255, 255);
+    let district = districtData[districtID-1];
+    let votesR = +district.votes_R;
+    let votesD = +district.votes_D;
+    // let votesI = +district.votes_I;
+    let total = votesR + votesD;
+    if (votesR > votesD) {
+        let hue = 255 * (votesR / total);
+        return d3.rgb(255, hue, hue);
+    } else if (votesD > votesR) {
+        let hue = 255 * (votesD / total);
+        return d3.rgb(hue, hue, 255);
+    } else {
+        return d3.rgb(255, 255, 255);
     }
-
 }
 
-function getVotes(districtID) {
-	var district = districtData[districtID - 1];
-	return [parseInt(district.votes_D), parseInt(district.votes_R)];
-	
-}
+d3.selection.prototype.moveToFront = function() {
+    return this.each(function(){
+      this.parentNode.appendChild(this);
+    });
+};
