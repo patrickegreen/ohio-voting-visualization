@@ -1,8 +1,6 @@
-
+// Functions for rendering the map and legend on it
 var districtData;
-
 var tooltip;
-
 var CENTROIDS = {
     1: [39.418203, -84.166441],
     2: [39.003667, -83.454167],
@@ -128,9 +126,3 @@ function getColor(colorScale, districtID) {
     let hue = votesD / total;
     return colorScale(hue);
 }
-
-d3.selection.prototype.moveToFront = function() {
-    return this.each(function(){
-      this.parentNode.appendChild(this);
-    });
-};

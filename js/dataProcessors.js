@@ -3,6 +3,9 @@ function processDemos(row, idx, columns) {
 }
 
 function processVoting(row, idx, columns) {
+    row['votes_D'] = +row['votes_D'];
+    row['votes_R'] = +row['votes_R'];
+    row['votes_I'] = +row['votes_I'];
     return row;
 }
 

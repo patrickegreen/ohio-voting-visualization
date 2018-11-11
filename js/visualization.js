@@ -13,7 +13,7 @@ var colors = [
 	'#A5A5A5',
 ];
 var highlightColor = '#26E24A';
-var svg;
+var svgMap;
 var width;
 var height;
 var legendBlockSize = 20;
@@ -24,16 +24,16 @@ var votingLegend;
 var sidebarWidth = 400;
 var districtCentroids = {};
 
-// Create global variables for the svg attributes and dataset
+// Create global variables for the svgMap attributes and dataset
 function initializeVis(dataGeo, dataDistrict, legends) {
 	districtData = dataDistrict;
 	legendConfig = legends;
 
-	svg = d3.select('#svgMap');
-	svgWidth = svg.attr('width');
+	svgMap = d3.select('#svgMap');
+	svgWidth = svgMap.attr('width');
 	width = svgWidth - sidebarWidth;
-	height = svg.attr('height');
-	visualizationGroup = svg.append("g");
+	height = svgMap.attr('height');
+	visualizationGroup = svgMap.append("g");
 	// Geo scaling of data
 	let projection = d3.geoEquirectangular()
 		.fitExtent([[0, 0], [width, height]], dataGeo);
@@ -63,7 +63,7 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 function draw_sidebar(groupOptions, flatOptions) {
     let totalOptions = groupOptions.length + flatOptions.length;
 	let spacing = (800 / totalOptions);
-	let options = svg.append('g')
+	let options = svgMap.append('g')
         .attr("transform", "translate(800, 0)");
 	options.selectAll("text.groupedOptions")
         .data(groupOptions)
@@ -114,9 +114,9 @@ function draw_sidebar(groupOptions, flatOptions) {
 
 // Initialize the static voting legend
 function initializeLegends() {
-	legend = svg.append('g')
+	legend = svgMap.append('g')
 		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
-	votingLegend = svg.append('g')
+	votingLegend = svgMap.append('g')
 		.attr("transform", "translate(10, " + (height - 150) + ")");
 
 	// Header
