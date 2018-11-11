@@ -63,11 +63,11 @@ var DEMOS = {
             'Unemployment Rate': 'Unemployment Rate',
         },
         'Occupation': {
-            'Management, business, science, and arts occupations': ['Occupation', 'Management/Business/Science/Arts'],
+            'Management, business, science, and arts occupations': ['Occupation', 'Business/Science/Arts'],
             'Service occupations': ['Occupation', 'Service'],
             'Sales and office occupations': ['Occupation', 'Sales/Office'],
-            'Natural resources, construction, and maintenance occupations': ['Occupation', 'Natural Resources/Construction/Maintenance'],
-            'Production, transportation, and material moving occupations': ['Occupation', 'Production/Transportation/Material Moving'],
+            'Natural resources, construction, and maintenance occupations': ['Occupation', 'Construction/Maint.'],
+            'Production, transportation, and material moving occupations': ['Occupation', 'Production/Transport'],
         },
     },
     'Housing': {

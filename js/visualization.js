@@ -4,7 +4,15 @@ var districtData;
 var legendConfig;
 var geoGenerator;
 var pieRadius = 25;
-var colors = [ "Red", "Chartreuse", "Blue", "Brown", "Gold", "Cyan", "Green"];
+// var colors = ["Green","Cyan", "Gold", "Red", "Chartreuse", "Blue"];
+var colors = [
+	'#7030A0',
+	'#26E24A',
+	'#ED8131',
+	'#FFC000',
+	'#E90BCF',
+	'#A5A5A5',
+];
 var svg;
 var width;
 var height;
@@ -66,6 +74,8 @@ function draw_sidebar(options) {
         })
         .attr("width", sidebarWidth - 20)
         .attr("height", barHeight)
+		.attr('font-family', 'cursive')
+		.style('font-weight', 'bold')
         .style("font-size", 40)
         .text(function(d) {
             return d;
@@ -100,7 +110,9 @@ function generateDemographicPies(type) {
 			.attr("fill", function(d, i) {
 				return colors[i];
 			})
-			.attr("d", arcs);
+			.attr("d", arcs)
+			.style('stroke', 'black')
+			.style('stroke-width', 2);
 	}
 	makeLegend(type);
 }
@@ -110,26 +122,42 @@ function initializeLegends() {
 		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
 	votingLegend = svg.append('g')
 		.attr("transform", "translate(10, " + (height - 150) + ")");
-		
+
+	// Header
+	votingLegend.append('text')
+		.attr("transform", "translate(0, 80)")
+		.text('Party Voting Scale')
+		.attr('fill', 'black')
+		.attr('font-size', 24)
+		.attr('font-family', 'cursive')
+		.style('font-weight', 'bold');
+
+	// TODO - convert to color scale
+	// Republican
 	votingLegend.append("text")
 		.attr("transform", "translate(0, 115)")
-		.text("District voted Republican")
-		.attr("fill", d3.rgb(255, 0, 0));
+		.text("Strong Republican")
+		.style('font-weight', 'bold');
 	votingLegend.append("rect")
 		.attr("transform", "translate(175,100)")
 		.attr("width", legendBlockSize)
 		.attr("height", legendBlockSize)
-		.attr("fill", d3.rgb(255, 0, 0));
-		
+		.attr("fill", d3.rgb(255, 0, 0))
+		.style('stroke', 'black')
+		.style('stroke-width', 2);
+
+	// Democrat
 	votingLegend.append("text")
 		.attr("transform", "translate(0, 140)")
-		.text("District voted Democrat")
-		.attr("fill", d3.rgb(0, 0, 255));
+		.text("Strong Democrat")
+		.style('font-weight', 'bold');
 	votingLegend.append("rect")
 		.attr("transform", "translate(175,125)")
 		.attr("width", legendBlockSize)
 		.attr("height", legendBlockSize)
-		.attr("fill", d3.rgb(0, 0, 255));
+		.attr("fill", d3.rgb(0, 0, 255))
+		.style('stroke', 'black')
+		.style('stroke-width', 2);
 }
 
 function makeLegend(type) {
@@ -137,6 +165,13 @@ function makeLegend(type) {
 	legend.selectAll("text").remove();
 	legend.selectAll("rect").remove();
 	options = legendConfig[type];
+	legend.append('text')
+		.attr("transform", "translate(0, -15)")
+		.text('Demo Legend')
+		.attr('fill', 'black')
+		.attr('font-size', 24)
+		.attr('font-family', 'cursive')
+		.style('font-weight', 'bold');
 
 	for (var i = 0; i < options.length; i++) {
 		let textOffset = 15 + 25*i;
@@ -144,12 +179,15 @@ function makeLegend(type) {
 		legend.append("text")
 			.attr("transform", "translate(0, " + textOffset + ")")
 			.text(options[i])
-			.attr("fill", colors[i]);
+			.attr('fill', 'black')
+			.style('font-weight', 'bold');
 		legend.append("rect")
 			.attr("transform", "translate(175," + colorOffset + ")")
 			.attr("width", legendBlockSize)
 			.attr("height", legendBlockSize)
-			.attr("fill", colors[i]);
+			.attr("fill", colors[i])
+			.style('stroke', 'black')
+			.style('stroke-width', 2);
 
 	}
 }
