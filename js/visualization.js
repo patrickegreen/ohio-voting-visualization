@@ -125,39 +125,35 @@ function initializeLegends() {
 
 	// Header
 	votingLegend.append('text')
-		.attr("transform", "translate(0, 80)")
-		.text('Party Voting Scale')
+		.attr("transform", "translate(98, 80)")
+		.text('Voting Results')
 		.attr('fill', 'black')
 		.attr('font-size', 24)
 		.attr('font-family', 'cursive')
 		.style('font-weight', 'bold');
 
-	// TODO - convert to color scale
-	// Republican
-	votingLegend.append("text")
-		.attr("transform", "translate(0, 115)")
-		.text("Strong Republican")
-		.style('font-weight', 'bold');
-	votingLegend.append("rect")
-		.attr("transform", "translate(175,100)")
-		.attr("width", legendBlockSize)
-		.attr("height", legendBlockSize)
-		.attr("fill", d3.rgb(255, 0, 0))
-		.style('stroke', 'black')
-		.style('stroke-width', 2);
+	var colorScale = d3.scaleLinear()
+      	.domain([0, 3, 6])
+		.range(['red', 'white', 'blue']);
 
-	// Democrat
+	for (var i = 0; i < 7; i++) {
+		let offset = 100 + 25*i;
+		votingLegend.append('rect')
+			.attr("transform", "translate(" + offset + ", 100)")
+			.attr("width", legendBlockSize)
+			.attr("height", legendBlockSize)
+			.attr("fill", colorScale(i))
+			.style('stroke', 'black')
+			.style('stroke-width', 2);
+	}
 	votingLegend.append("text")
-		.attr("transform", "translate(0, 140)")
-		.text("Strong Democrat")
+		.attr("transform", "translate(8, 114)")
+		.text("Republican")
 		.style('font-weight', 'bold');
-	votingLegend.append("rect")
-		.attr("transform", "translate(175,125)")
-		.attr("width", legendBlockSize)
-		.attr("height", legendBlockSize)
-		.attr("fill", d3.rgb(0, 0, 255))
-		.style('stroke', 'black')
-		.style('stroke-width', 2);
+	votingLegend.append("text")
+		.attr("transform", "translate(280, 114)")
+		.text("Democrat")
+		.style('font-weight', 'bold');
 }
 
 function makeLegend(type) {

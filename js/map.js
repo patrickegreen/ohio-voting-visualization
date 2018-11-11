@@ -92,21 +92,10 @@ function renderMap(dataGeo, mergedData) {
 		.on("mouseout", function(d) {
 			return tooltip.style("Visibility", "hidden");
 		});
-
-    // Tag features
-    // let texts = svg.selectAll('text')
-    //     .data(dataGeo.features)
-    //     .enter()
-    //     .append('text')
-    //     .attr('text-anchor', 'middle')
-    //     .attr('alignment-baseline', 'middle')
-    //     .attr('opacity', 0.5)
-    //     .attr('transform', function (d) {
-    //         let center = geoGenerator.centroid(d);
-    //         return 'translate (' + center + ')';
-    //     });
 }
 
+// Shade the district based on the degree votes favor one party or the other
+//  scales red >> white >> blue
 function getColor(districtID) {
 	var district = districtData[districtID - 1];
 	var votes_d = parseInt(district.votes_D);
@@ -115,10 +104,12 @@ function getColor(districtID) {
 	var relativeColor = 255 - 255 * Math.abs(voteDiff) / (votes_r + votes_d);
 	if (voteDiff < 0) {
 		return d3.rgb(255, relativeColor, relativeColor);
-	}
-	else {
+	} else if (voteDiff > 0) {
 		return d3.rgb(relativeColor, relativeColor, 255);
-	}
+	} else {
+	    return d3.rgb(255, 255, 255);
+    }
+
 }
 
 function getVotes(districtID) {
