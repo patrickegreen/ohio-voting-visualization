@@ -12,6 +12,7 @@ var colors = [
 	'#E90BCF',
 	'#A5A5A5',
 ];
+var highlightColor = '#26E24A';
 var svg;
 var width;
 var height;
@@ -76,15 +77,14 @@ function draw_sidebar(groupOptions, flatOptions) {
         .attr("height", spacing)
 		.attr('font-family', 'cursive')
         .attr('class', 'groupedOptions demoOptions')
+        .attr('value', function(d) { return d;} )
 		.style('font-weight', 'bold')
         .style("font-size", 30)
         .style('text-decoration', 'underline')
-        .text(function(d) {
-            return d;
-        })
+        .text(function(d) { return d;} )
         .on("click", function(d) {
             d3.selectAll('text.demoOptions').style('fill', 'black');
-            d3.select(this).style('fill', '#26E24A');
+            d3.select(this).style('fill', highlightColor);
             generateDemographicPies(d);
         });
 	options.selectAll("text.flatOptions")
@@ -106,7 +106,7 @@ function draw_sidebar(groupOptions, flatOptions) {
         })
         .on("click", function(d) {
             d3.selectAll('text.demoOptions').style('fill', 'black');
-            d3.select(this).style('fill', '#26E24A');
+            d3.select(this).style('fill', highlightColor);
             generateSizedCircles(d);
         });
 	

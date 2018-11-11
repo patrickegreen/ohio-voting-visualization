@@ -36,10 +36,9 @@ DESCRIPTION:
       let districtData = data.districtData;
       let legendConfig = data.legendConfig;
       renderMap(dataGeo, districtData);
-      console.log(districtData);
-      console.log(legendConfig);
       initializeVis(dataGeo, districtData, legendConfig);
-	    generateDemographicPies("Race");
+	    generateDemographicPies("Sex");
+	    d3.select("text[value=Sex]").style('fill', highlightColor);
     }
   </script>
 </body>
