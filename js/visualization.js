@@ -20,7 +20,6 @@ var svgWidth;
 var legend;
 var votingLegend;
 var sidebarWidth = 400;
-var sidebarWords = ["Race", "Age", "Median Income", "Median Age" /* Add more words here to add more visualizations */];
 var districtCentroids = {};
 //this function is complete
 function initializeVis(dataDemos, dataVoting, dataGeo, organizedData, legends) {
@@ -40,8 +39,20 @@ function initializeVis(dataDemos, dataVoting, dataGeo, organizedData, legends) {
 		.fitExtent([[0, 0], [width, height]], dataGeo);
 	geoGenerator = d3.geoPath()
 		.projection(projection);
-		draw_sidebar(sidebarWords);
+
+	// Create sidebar options for grouped data
+	let sidebarGroupedOptions = [];
+	let sidebarFlatOptions = [];
+	for (dataKey in legendConfig) {
+		if (legendConfig[dataKey].length > 0) {
+			sidebarGroupedOptions.push(dataKey);
+		} else {
+			sidebarFlatOptions.push(dataKey);
+		}
+	}
+	draw_sidebar(sidebarGroupedOptions);
 	initializeLegends();
+
 	// Manually override the district centroids for pie charts
 	for (var dID in CENTROIDS) {
 		let latlng = CENTROIDS[dID];
@@ -49,13 +60,12 @@ function initializeVis(dataDemos, dataVoting, dataGeo, organizedData, legends) {
 	}
 }
 
-function draw_sidebar(words) {
-	var options = words.length;
-	var barHeight = (800 / words.length);
-	var wordG = svg.append('g')
+function draw_sidebar(options) {
+	let barHeight = (800 / options.length);
+	let wordG = svg.append('g')
 			.attr("transform", "translate(800, 0)");
 	wordG.selectAll("text")
-        .data(words)
+        .data(options)
         .enter()
         .append("text")
         .attr("x", 10)
@@ -96,43 +106,31 @@ function getGeo(distNum) {
 //	district, but they don't get positioned properly and the center of the pie chart is in the wrong spot
 function generateDemographicPies(type) {
 	pieGroup.selectAll("g").remove();
-	districtDemoData = [];
-	
+
 	if (type == "Race") {
-		//demographic rows for races
-		let whiteRow = getDemoRow("Race", "White");
-		let blackRow = getDemoRow("Race", "Black or African American");
-		let asianRow = getDemoRow("Race", "Asian");
-		let americanNativeRow = getDemoRow("Race", "American Indian and Alaska Native");
-		let pacificIslanderRow = getDemoRow("Race", "Native Hawaiian and Other Pacific Islander");
-		let otherRow = getDemoRow("Race", "Some other race");
-		let twoPlusRow = getDemoRow("Race", "Two or more races");
-		
-		
-		
-		for (var counter = 1; counter < 17; counter++) {
-			var districtRow = [parseInt(whiteRow[counter + ""]), parseInt(blackRow[counter + ""]), parseInt(asianRow[counter + ""]), parseInt(americanNativeRow[counter + ""]) +
-				parseInt(pacificIslanderRow[counter + ""]) + parseInt(otherRow[counter + ""]), parseInt(twoPlusRow[counter + ""])];
-			districtDemoData.push(districtRow);
-			var pieMaker = d3.pie();
-			var districtPie = pieMaker(districtRow);
-			var arcs = d3.arc()
-			.innerRadius(0)
-			.outerRadius(pieRadius);
-			var districtPieGroup = pieGroup.append("g");
+	    // Create a pie for each district
+		for (var idx = 0; idx < districtData.length; idx++) {
+			let districtID = idx + 1;
+			let districtRow = districtData[idx][type];
+			let pieMaker = d3.pie();
+			let districtPie = pieMaker(districtRow);
+			let arcs = d3.arc()
+                .innerRadius(0)
+                .outerRadius(pieRadius);
+			let districtPieGroup = pieGroup.append("g");
 			districtPieGroup.selectAll("path")
-			.data(districtPie)
-			.enter()
-			.append("path")
-			.attr("transform", function (d, i) {
-				return "translate (" + districtCentroids[counter] + ")";
-			})
-			.attr("fill", function(d, i) {
-				return colors[i];
-			})
-			.attr("d", arcs);
+                .data(districtPie)
+                .enter()
+                .append("path")
+                .attr("transform", function (d, i) {
+                    return "translate (" + districtCentroids[districtID] + ")";
+                })
+                .attr("fill", function(d, i) {
+                    return colors[i];
+                })
+                .attr("d", arcs);
 		}
-		makeLegend(svg, "White", "Black or African American", "Asian", "Other Ethnicity", "Multiracial", "");
+		// makeLegend(svg, "White", "Black or African American", "Asian", "Other Ethnicity", "Multiracial", "");
 	} else if (type == "Age") {
 		let yearsUnder5 = getDemoRow("Sex and Age", "Under 5 years");
 		let years5To9 = getDemoRow("Sex and Age", "5 to 9 years");
@@ -222,7 +220,7 @@ function initializeLegends() {
 		
 	votingLegend.append("text")
 		.attr("transform", "translate(0, 115)")
-		.text("District voted republican")
+		.text("District voted Republican")
 		.attr("fill", d3.rgb(255, 0, 0));
 	votingLegend.append("rect")
 		.attr("transform", "translate(175,100)")
@@ -232,7 +230,7 @@ function initializeLegends() {
 		
 	votingLegend.append("text")
 		.attr("transform", "translate(0, 140)")
-		.text("District voted democrat")
+		.text("District voted Democrat")
 		.attr("fill", d3.rgb(0, 0, 255));
 	votingLegend.append("rect")
 		.attr("transform", "translate(175,125)")
