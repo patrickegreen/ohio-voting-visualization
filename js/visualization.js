@@ -4,6 +4,7 @@ var demoData;
 var votingData;
 var geoData;
 var districtData;
+var legendConfig;
 
 var geoGenerator;
 
@@ -22,11 +23,12 @@ var sidebarWidth = 400;
 var sidebarWords = ["Race", "Age", "Median Income", "Median Age" /* Add more words here to add more visualizations */];
 var districtCentroids = {};
 //this function is complete
-function initializeVis(dataDemos, dataVoting, dataGeo, organizedData) {
+function initializeVis(dataDemos, dataVoting, dataGeo, organizedData, legends) {
 	demoData = dataDemos;
 	votingData = dataVoting;
 	geoData = dataGeo;
 	districtData = organizedData;
+	legendConfig = legends;
 
 	svg = d3.select('#svgMap');
 	svgWidth = svg.attr('width');
@@ -53,22 +55,22 @@ function draw_sidebar(words) {
 	var wordG = svg.append('g')
 			.attr("transform", "translate(800, 0)");
 	wordG.selectAll("text")
-	.data(words)
-	.enter()
-	.append("text")
-	.attr("x", 10)
-	.attr("y", function(d, i) {
-		return barHeight * i + 40;
-	})
-	.attr("width", sidebarWidth - 20)
-	.attr("height", barHeight)
-	.style("font-size", 40)
-	.text(function(d) {
-		return d;
-	})
-	.on("click", function(d) {
-		generateDemographicPies(d);
-	});
+        .data(words)
+        .enter()
+        .append("text")
+        .attr("x", 10)
+        .attr("y", function(d, i) {
+            return barHeight * i + 40;
+        })
+        .attr("width", sidebarWidth - 20)
+        .attr("height", barHeight)
+        .style("font-size", 40)
+        .text(function(d) {
+            return d;
+        })
+        .on("click", function(d) {
+            generateDemographicPies(d);
+        });
 	
 }
 

@@ -145,6 +145,7 @@ function combineData(dataVoting, dataDemos) {
                 groupKey = null;
                 valueKey = rConfig;
                 consolidateIndex = -1;
+                legends[valueKey] = [];
             }
 
             // Update this demographic for each district
