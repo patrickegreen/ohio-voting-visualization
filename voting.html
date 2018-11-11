@@ -32,11 +32,14 @@ DESCRIPTION:
     });
 
     function initialize(dataDemos, dataVoting, dataGeo) {
-      let mergedData = combineData(dataVoting, dataDemos);
-      renderMap(dataGeo, mergedData);
-      // console.log(mergedData);
-      initializeVis(dataDemos, dataVoting, dataGeo, mergedData);
-	  generateDemographicPies("Race");
+      let data = combineData(dataVoting, dataDemos);
+      let districtData = data.districtData;
+      let legendConfig = data.legendConfig;
+      renderMap(dataGeo, districtData);
+      // console.log(districtData);
+      // console.log(legendConfig);
+      initializeVis(dataDemos, dataVoting, dataGeo, districtData);
+	    generateDemographicPies("Race");
     }
   </script>
 </body>
