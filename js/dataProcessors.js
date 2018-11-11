@@ -99,9 +99,9 @@ var DEMOS = {
     },
     'Education': {
         'Educational Attainment': {
-            'Less than 9th grade': ['Education', 'Middle School'],
-            '9th to 12th grade, no diploma': ['Education', 'High School (no diploma)'],
-            'High school graduate (includes equivalency)': ['Education', 'HS Graduate or GED'],
+            'Less than 9th grade': ['Education', 'No High School Diploma'],
+            '9th to 12th grade, no diploma': ['Education', 'No High School Diploma'],
+            'High school graduate (includes equivalency)': ['Education', 'High School Diploma'],
             'Some college, no degree': ['Education', 'College (no degree)'],
             "Associate's degree": ['Education', 'Associates'],
             "Bachelor's degree": ['Education', 'Bachelors'],

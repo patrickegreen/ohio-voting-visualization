@@ -77,6 +77,11 @@ function renderMap(dataGeo, data) {
     let geoGenerator = d3.geoPath()
         .projection(projection);
 
+    // Color scale - effectively percentage democrat voting
+	let colorScale = d3.scaleLinear()
+      	.domain([0, 0.5, 1])
+		.range(['red', 'white', 'blue']);
+
     // Append paths
     let paths = svg.selectAll('path')
         .data(dataGeo.features)
@@ -84,7 +89,7 @@ function renderMap(dataGeo, data) {
         .append('path')
         .style('stroke', 'black')
         .style('fill', function (d) {
-			return getColor(parseInt(d.properties.CD115FP));
+			return getColor(colorScale, parseInt(d.properties.CD115FP));
 		})
         .attr('d', geoGenerator)
 		.on("mouseover", function(d, i) {
@@ -114,22 +119,14 @@ function renderMap(dataGeo, data) {
 }
 
 // Shade the district based on the degree votes favor one party or the other
-//  scales red >> white >> blue
-function getColor(districtID) {
+function getColor(colorScale, districtID) {
     let district = districtData[districtID-1];
     let votesR = +district.votes_R;
     let votesD = +district.votes_D;
-    // let votesI = +district.votes_I;
-    let total = votesR + votesD;
-    if (votesR > votesD) {
-        let hue = 255 * (votesR / total);
-        return d3.rgb(255, hue, hue);
-    } else if (votesD > votesR) {
-        let hue = 255 * (votesD / total);
-        return d3.rgb(hue, hue, 255);
-    } else {
-        return d3.rgb(255, 255, 255);
-    }
+    let votesI = +district.votes_I;
+    let total = votesR + votesD + votesI;
+    let hue = votesD / total;
+    return colorScale(hue);
 }
 
 d3.selection.prototype.moveToFront = function() {

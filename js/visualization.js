@@ -49,7 +49,7 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 			sidebarFlatOptions.push(dataKey);
 		}
 	}
-	draw_sidebar(sidebarGroupedOptions);
+	draw_sidebar(sidebarGroupedOptions, sidebarFlatOptions);
 	initializeLegends();
 
 	// Manually override the district centroids for pie charts
@@ -59,12 +59,12 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 	}
 }
 
-function draw_sidebar(options) {
-	let barHeight = (800 / options.length);
+function draw_sidebar(groupOptions, flatOptions) {
+	let barHeight = (800 / groupOptions.length);
 	let wordG = svg.append('g')
 			.attr("transform", "translate(800, 0)");
 	wordG.selectAll("text")
-        .data(options)
+        .data(groupOptions)
         .enter()
         .append("text")
         .attr("x", 10)
@@ -85,37 +85,7 @@ function draw_sidebar(options) {
 	
 }
 
-// Generate pie charts for the grouped data
-function generateDemographicPies(type) {
-	pieGroup.selectAll("g").remove();
-
-	// Create a pie for each district
-	for (var idx = 0; idx < districtData.length; idx++) {
-		let districtID = idx + 1;
-		let districtRow = districtData[idx][type];
-		let pieMaker = d3.pie();
-		let districtPie = pieMaker(districtRow);
-		let arcs = d3.arc()
-			.innerRadius(0)
-			.outerRadius(pieRadius);
-		let districtPieGroup = pieGroup.append("g");
-		districtPieGroup.selectAll("path")
-			.data(districtPie)
-			.enter()
-			.append("path")
-			.attr("transform", function (d, i) {
-				return "translate (" + districtCentroids[districtID] + ")";
-			})
-			.attr("fill", function(d, i) {
-				return colors[i];
-			})
-			.attr("d", arcs)
-			.style('stroke', 'black')
-			.style('stroke-width', 2);
-	}
-	makeLegend(type);
-}
-
+// Initialize the static voting legend
 function initializeLegends() {
 	legend = svg.append('g')
 		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
@@ -155,6 +125,38 @@ function initializeLegends() {
 		.style('font-weight', 'bold');
 }
 
+// Generate pie charts for the grouped data
+function generateDemographicPies(type) {
+	pieGroup.selectAll("g").remove();
+
+	// Create a pie for each district
+	for (var idx = 0; idx < districtData.length; idx++) {
+		let districtID = idx + 1;
+		let districtRow = districtData[idx][type];
+		let pieMaker = d3.pie();
+		let districtPie = pieMaker(districtRow);
+		let arcs = d3.arc()
+			.innerRadius(0)
+			.outerRadius(pieRadius);
+		let districtPieGroup = pieGroup.append("g");
+		districtPieGroup.selectAll("path")
+			.data(districtPie)
+			.enter()
+			.append("path")
+			.attr("transform", function (d, i) {
+				return "translate (" + districtCentroids[districtID] + ")";
+			})
+			.attr("fill", function(d, i) {
+				return colors[i];
+			})
+			.attr("d", arcs)
+			.style('stroke', 'black')
+			.style('stroke-width', 2);
+	}
+	makeLegend(type);
+}
+
+// Generate Legend for grouped data
 function makeLegend(type) {
 	// Clear area for legend
 	legend.selectAll("text").remove();
