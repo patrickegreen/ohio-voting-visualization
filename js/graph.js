@@ -2,14 +2,18 @@
 
 var graphMargin = 50;
 var svgGraph;
+var graphWidth;
+var graphHeight;
+var graphGroup;
+var largePieRadius = 350;
 
-function renderGraph(demoType, districtID) {
+function initializeGraph() {
     svgGraph = d3.select('#svgGraph');
-    svgGraph.selectAll('*').remove();
+    graphGroup = svgGraph.append("g");
     let boxWidth = svgGraph.attr('width');
     let boxHeight = svgGraph.attr('height');
-    let graphWidth = boxWidth - 2 * graphMargin;
-    let graphHeight = boxHeight - 2 * graphMargin;
+    graphWidth = boxWidth - 2 * graphMargin;
+    graphHeight = boxHeight - 2 * graphMargin;
 
     // Add bounding box
     svgGraph.append('text')
@@ -28,93 +32,95 @@ function renderGraph(demoType, districtID) {
         .style('stroke', 'black')
         .style('fill', 'none')
         .style('stroke-width', 2);
+}
 
+function renderGraph(demoType, districtID) {
     // Three types of visualization
-    //   (1) demoType is group, no id specified >> show multi-line chart comparing districts across categories
-    //   (2) demoType is group, id specified >> show a blown-up pie chart for that district
-    //   (3) demoType is flat, regardless of id >> show a bar chart by district
+    //   (1) demoType is group, id specified >> show a blown-up pie chart for that district
+    //   (2) demoType is group, no id specified >> show statewide average pie chart
+    //   (3) demoType is flat, regardless of id >> show a bar chart by district (Not implemented)
     let options = legendConfig[demoType];
     if (options.length && districtID) {
-        // (1)
-        renderGraphLines(options, demoType, districtID);
-    } else if (options.length) {
-        // (2)
+        // (1) and (2)
+        svgGraph.style("visibility", "visible");
         renderGraphPie(options, demoType, districtID);
     } else {
         // (3)
-        renderGraphBars(demoType);
+        svgGraph.style("visibility", "hidden");
+        // renderGraphBars(demoType);
     }
 }
 
-function renderGraphLines(options, demoType, districtID) {
-    var n = 21;
-    //
-    // // 5. X scale will use the index of our data
-    // var xScale = d3.scaleLinear()
-    //     .domain([0, n-1]) // input
-    //     .range([0, width]); // output
-    //
-    // // 6. Y scale will use the randomly generate number
-    // var yScale = d3.scaleLinear()
-    //     .domain([0, 1]) // input
-    //     .range([height, 0]); // output
-    //
-    // // 7. d3's line generator
-    // var line = d3.line()
-    //     .x(function(d, i) { return xScale(i); }) // set the x values for the line generator
-    //     .y(function(d) { return yScale(d.y); }) // set the y values for the line generator
-    //     .curve(d3.curveMonotoneX) // apply smoothing to the line
-    //
-    // // 8. An array of objects of length N. Each object has key -> value pair, the key being "y" and the value is a random number
-    // var dataset = d3.range(n).map(function(d) { return {"y": d3.randomUniform(1)() } })
-    //
-    // // 1. Add the SVG to the page and employ #2
-    // var svg = d3.select("body").append("svg")
-    //     .attr("width", width + margin.left + margin.right)
-    //     .attr("height", height + margin.top + margin.bottom)
-    //   .append("g")
-    //     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-    //
-    // // 3. Call the x axis in a group tag
-    // svg.append("g")
-    //     .attr("class", "x axis")
-    //     .attr("transform", "translate(0," + height + ")")
-    //     .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
-    //
-    // // 4. Call the y axis in a group tag
-    // svg.append("g")
-    //     .attr("class", "y axis")
-    //     .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
-    //
-    // // 9. Append the path, bind the data, and call the line generator
-    // svg.append("path")
-    //     .datum(dataset) // 10. Binds data to the line
-    //     .attr("class", "line") // Assign a class for styling
-    //     .attr("d", line); // 11. Calls the line generator
-    //
-    // // 12. Appends a circle for each datapoint
-    // svg.selectAll(".dot")
-    //     .data(dataset)
-    //   .enter().append("circle") // Uses the enter().append() method
-    //     .attr("class", "dot") // Assign a class for styling
-    //     .attr("cx", function(d, i) { return xScale(i) })
-    //     .attr("cy", function(d) { return yScale(d.y) })
-    //     .attr("r", 5)
-    //       .on("mouseover", function(a, b, c) {
-    //             console.log(a)
-    //         this.attr('class', 'focus')
-    //         })
-    //       .on("mouseout", function() {  })
-}
 
 function renderGraphPie(options, demoType, districtID) {
-	return null;
+	graphGroup.selectAll("g").remove();
+    activeDistrict = districtID;
+	// Create a pie for the statewide average or a blow-up of a specific district
+    if (districtID) {
+        d3.select('text.chartText').html(demoType + ' (District ' + districtID + ')');
+        let districtRow = districtData[districtID - 1][demoType];
+        let totalRow = d3.sum(districtRow);
+        let pieMaker = d3.pie();
+        let districtPie = pieMaker(districtRow);
+        let normalArc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(largePieRadius);
+        let focusArc = d3.arc()
+            .innerRadius(0)
+            .outerRadius(largePieRadius + 25);
+        let districtPieGroup = graphGroup.append("g");
+        let xCenter = graphMargin + 0.5 * graphWidth; // svgWidth is map offset
+        let yCenter = 1.5 * graphMargin + 0.5 * graphHeight;
+        districtPieGroup.selectAll("path.largePie")
+            .data(districtPie)
+            .enter()
+        .append("path")
+            .attr("transform", function (d, i) {
+                return "translate (" + xCenter + ", " + yCenter + ")";
+            })
+            .attr("fill", function (d, i) {
+                return colors[i];
+            })
+            .attr("d", normalArc)
+            .attr('class', 'largePie')
+            .style('stroke', 'black')
+            .style('stroke-width', 2)
+		.on('mouseover', function(d, i) {
+            d3.select(this).transition()
+              .duration(100)
+              .attr("d", focusArc)
+              .style('stroke-width', 5);
+			return tooltip.html(
+			    "<strong>" + options[i] + "</strong><br/>" +
+                districtRow[i] + "<br/>" +
+                (100 * districtRow[i] / totalRow).toFixed(1) + "%"
+            )
+            .style("Visibility", "Visible");
+		})
+		.on("mousemove", function() {
+			return tooltip.style("top", (event.pageY-10 +"px"))
+			.style("left", (event.pageX+10 +"px"));
+		})
+		.on("mousemove", function() {
+			return tooltip.style("top", (event.pageY-25 +"px"))
+			.style("left", (event.pageX+25 +"px"));
+		})
+		.on("mouseout", function(d) {
+            d3.select(this).transition()
+              .duration(100)
+              .attr("d", normalArc)
+              .style('stroke-width', 2);
+			return tooltip.style("Visibility", "hidden");
+		});
+    }
 }
 
+// Not implemented
 function renderGraphBars(demoType) {
-	return null;
+	graphGroup.selectAll("g").remove();
 }
 
+// Used to pop an item to the front of the visualization (ex. useful for ensuring highlighting stroke is visible)
 d3.selection.prototype.moveToFront = function() {
     return this.each(function(){
       this.parentNode.appendChild(this);

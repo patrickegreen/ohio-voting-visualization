@@ -1,6 +1,8 @@
 // Functions for rendering the map and legend on it
 var districtData;
 var tooltip;
+var tooltipHeight = 80;
+var tooltipWidth = 160;
 var CENTROIDS = {
     1: [39.418203, -84.166441],
     2: [39.003667, -83.454167],
@@ -22,9 +24,9 @@ var CENTROIDS = {
 function renderMap(dataGeo, data) {
 	districtData = data;
 	tooltip = d3.select("body")
-        .append("div")
-        .style("width", "160px")
-        .style("height", "80px")
+    .append("div")
+        .style("width", tooltipWidth)
+        .style("height",tooltipHeight)
         .style("padding", "2px")
         .style("background", "Bisque")
         .style("border", "0px")
@@ -34,7 +36,7 @@ function renderMap(dataGeo, data) {
         .style("z-index", "10")
         .style("visibility", "hidden")
         .text("Future Votes!");
-	
+
     let svg = d3.select('#svgMap');
     // Clear previous render
     svg.selectAll('*').remove();
@@ -81,14 +83,18 @@ function renderMap(dataGeo, data) {
 		.range(['red', 'white', 'blue']);
 
     // Append paths
-    let paths = svg.selectAll('path')
+    let paths = svg.selectAll('path.districtBounds')
         .data(dataGeo.features)
         .enter()
-        .append('path')
+    .append('path')
         .style('stroke', 'black')
         .style('fill', function (d) {
 			return getColor(colorScale, parseInt(d.properties.CD115FP));
 		})
+        .attr('class', 'districtBounds')
+        .attr('districtID', function(d) {
+            return parseInt(d.properties.CD115FP);
+        })
         .attr('d', geoGenerator)
 		.on("mouseover", function(d, i) {
 		    let districtID = parseInt(d.properties.CD115FP);
@@ -107,8 +113,8 @@ function renderMap(dataGeo, data) {
 			    .style("Visibility", "Visible");
 		})
 		.on("mousemove", function() {
-			return tooltip.style("top", (event.pageY-10 +"px"))
-			.style("left", (event.pageX+10 +"px"));
+			return tooltip.style("top", (event.pageY-25 +"px"))
+			.style("left", (event.pageX+25 +"px"));
 		})
 		.on("mouseout", function(d) {
 			d3.select(this).style('stroke-width', 1);

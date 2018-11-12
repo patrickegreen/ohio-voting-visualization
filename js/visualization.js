@@ -14,8 +14,8 @@ var colors = [
 ];
 var highlightColor = '#26E24A';
 var svgMap;
-var width;
-var height;
+var mapWidth;
+var mapHeight;
 var legendBlockSize = 20;
 var visualizationGroup;
 var svgWidth;
@@ -23,6 +23,7 @@ var legend;
 var votingLegend;
 var sidebarWidth = 400;
 var districtCentroids = {};
+var activeDistrict = null;
 
 // Create global variables for the svgMap attributes and dataset
 function initializeVis(dataGeo, dataDistrict, legends) {
@@ -31,12 +32,12 @@ function initializeVis(dataGeo, dataDistrict, legends) {
 
 	svgMap = d3.select('#svgMap');
 	svgWidth = svgMap.attr('width');
-	width = svgWidth - sidebarWidth;
-	height = svgMap.attr('height');
+	mapWidth = svgWidth - sidebarWidth;
+	mapHeight = svgMap.attr('height');
 	visualizationGroup = svgMap.append("g");
 	// Geo scaling of data
 	let projection = d3.geoEquirectangular()
-		.fitExtent([[0, 0], [width, height]], dataGeo);
+		.fitExtent([[0, 0], [mapWidth, mapHeight]], dataGeo);
 	geoGenerator = d3.geoPath()
 		.projection(projection);
 
@@ -86,6 +87,7 @@ function draw_sidebar(groupOptions, flatOptions) {
             d3.selectAll('text.demoOptions').style('fill', 'black');
             d3.select(this).style('fill', highlightColor);
             generateDemographicPies(d);
+            renderGraph(d, activeDistrict);
         });
 	options.selectAll("text.flatOptions")
         .data(flatOptions)
@@ -108,6 +110,8 @@ function draw_sidebar(groupOptions, flatOptions) {
             d3.selectAll('text.demoOptions').style('fill', 'black');
             d3.select(this).style('fill', highlightColor);
             generateSizedCircles(d);
+            activeDistrict = null;
+            renderGraph(d, activeDistrict);
         });
 	
 }
@@ -115,9 +119,9 @@ function draw_sidebar(groupOptions, flatOptions) {
 // Initialize the static voting legend
 function initializeLegends() {
 	legend = svgMap.append('g')
-		.attr("transform", "translate(" + (width - 200) + ", " + (height - 150) + ")");
+		.attr("transform", "translate(" + (mapWidth - 200) + ", " + (mapHeight - 150) + ")");
 	votingLegend = svgMap.append('g')
-		.attr("transform", "translate(10, " + (height - 150) + ")");
+		.attr("transform", "translate(10, " + (mapHeight - 150) + ")");
 
 	// Header
 	votingLegend.append('text')
@@ -153,41 +157,56 @@ function initializeLegends() {
 }
 
 // Generate pie charts for the grouped data
-function generateDemographicPies(type) {
+function generateDemographicPies(demoType) {
 	visualizationGroup.selectAll("g").remove();
 
 	// Create a pie for each district
 	for (var idx = 0; idx < districtData.length; idx++) {
 		let districtID = idx + 1;
-		let districtRow = districtData[idx][type];
+		let districtRow = districtData[idx][demoType];
 		let pieMaker = d3.pie();
 		let districtPie = pieMaker(districtRow);
-		let arcs = d3.arc()
+		let normalArcs = d3.arc()
 			.innerRadius(0)
 			.outerRadius(pieRadius);
 		let districtPieGroup = visualizationGroup.append("g");
-		districtPieGroup.selectAll("path")
+		districtPieGroup.selectAll("path.pieChart")
 			.data(districtPie)
 			.enter()
-			.append("path")
+        .append("path")
 			.attr("transform", function (d, i) {
 				return "translate (" + districtCentroids[districtID] + ")";
 			})
 			.attr("fill", function(d, i) {
 				return colors[i];
 			})
-			.attr("d", arcs)
+			.attr("d", normalArcs)
             .attr('class', 'pieChart')
 			.style('stroke', 'black')
-			.style('stroke-width', 2);
+			.style('stroke-width', 2)
+            .on("click", function(d) {
+                activeDistrict = districtID;
+                generateDemographicPies(demoType); // re-render to get larger size (inefficient)
+                renderGraph(demoType, districtID);
+            });
+		if (districtID === activeDistrict) {
+		    districtPieGroup.append('circle')
+                .attr("transform", function (d, i) {
+                    return "translate (" + districtCentroids[districtID] + ")";
+                })
+                .attr("fill", "white")
+                .attr("r", 5)
+                .style('stroke', 'black')
+                .style('stroke-width', 1);
+        }
 	}
-	makeLegend(type, [], null);
+	makeLegend(demoType, [], null);
 }
 
-function generateSizedCircles(type) {
+function generateSizedCircles(demoType) {
 	visualizationGroup.selectAll("g").remove();
     let circleGroup = visualizationGroup.append("g");
-    let values = districtData.map(function(o) { return o[type]; });
+    let values = districtData.map(function(o) { return o[demoType]; });
     let mean = d3.mean(values);
     let stdev = d3.deviation(values);
 	let sizeScale = d3.scaleLinear()
@@ -195,7 +214,7 @@ function generateSizedCircles(type) {
       	.range([10, 40]);
 	for (var idx = 0; idx < districtData.length; idx++) {
 		let districtID = idx + 1;
-		let value = districtData[idx][type];
+		let value = districtData[idx][demoType];
         let circle = circleGroup.append("circle")
             .attr("transform", function (d, i) {
                 return "translate (" + districtCentroids[idx + 1] + ")";
@@ -206,17 +225,17 @@ function generateSizedCircles(type) {
             })
 			.style('stroke', 'black')
 			.style('stroke-width', 2);
-    makeLegend(type, values, sizeScale);
+    makeLegend(demoType, values, sizeScale);
     }
 }
 
 // Generate Legend for grouped data
-function makeLegend(type, values, sizeScale) {
+function makeLegend(demoType, values, sizeScale) {
 	// Clear area for legend
 	legend.selectAll("text").remove();
 	legend.selectAll("rect").remove();
 	legend.selectAll("circle").remove();
-	options = legendConfig[type];
+	options = legendConfig[demoType];
 
 	// Grouped colors
     if (options.length) {
