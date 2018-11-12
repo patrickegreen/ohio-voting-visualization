@@ -112,6 +112,15 @@ function renderGraphPie(options, demoType, districtID) {
               .style('stroke-width', 2);
 			return tooltip.style("Visibility", "hidden");
 		});
+
+        districtPieGroup.append('circle')
+            .attr("transform", function (d, i) {
+                return "translate (" + xCenter + ", " + yCenter + ")";
+            })
+            .attr("fill", "white")
+            .attr("r", 25)
+            .style('stroke', 'black')
+            .style('stroke-width', 1);
     }
 }
 

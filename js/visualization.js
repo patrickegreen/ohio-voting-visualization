@@ -110,7 +110,7 @@ function draw_sidebar(groupOptions, flatOptions) {
             d3.selectAll('text.demoOptions').style('fill', 'black');
             d3.select(this).style('fill', highlightColor);
             generateSizedCircles(d);
-            activeDistrict = null;
+            // activeDistrict = null;
             renderGraph(d, activeDistrict);
         });
 	
