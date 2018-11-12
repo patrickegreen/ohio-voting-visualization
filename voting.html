@@ -41,10 +41,10 @@ DESCRIPTION:
       initializeGraph();
       // Set to starting demographic
       let startingDemo = 'Sex';
-      let startingDistrict = null;
+      activeDistrict = 3;
 	    generateDemographicPies(startingDemo);
 	    d3.select("text[value="+startingDemo+"]").style('fill', highlightColor);
-	    renderGraph(startingDemo, startingDistrict);
+	    renderGraph(startingDemo, activeDistrict);
     }
   </script>
 </body>

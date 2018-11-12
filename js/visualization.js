@@ -224,7 +224,23 @@ function generateSizedCircles(demoType) {
                 return sizeScale(value);
             })
 			.style('stroke', 'black')
-			.style('stroke-width', 2);
+			.style('stroke-width', 2)
+            .on("mouseover", function(d, i) {
+			    d3.select(this).style('stroke-width', 4);
+                return tooltip.html(
+                    "<strong>" + value + "</strong>"
+                )
+                .style("Visibility", "Visible");
+            })
+            .on("mousemove", function() {
+                return tooltip.style("top", (event.pageY-25 +"px"))
+                .style("left", (event.pageX+25 +"px"));
+            })
+            .on("mouseout", function(d) {
+			    d3.select(this).style('stroke-width', 2);
+                return tooltip.style("Visibility", "hidden");
+            });
+
     makeLegend(demoType, values, sizeScale);
     }
 }
@@ -269,26 +285,37 @@ function makeLegend(demoType, values, sizeScale) {
         let stdev = d3.deviation(values);
         let offset = -90;
         let textAdjust = 2;
-        if (!options.length) {
-            for (var i = -2; i < 3; i++) {
-                let value = mean + i * stdev;
-                let radius = sizeScale(value);
-                value = d3.max([value, 0]);  // avoid negatives for stdev range
-                let textOffset = offset + textAdjust;
-                legend.append("text")
-                    .attr("transform", "translate(130, " + textOffset + ")")
-                    .text(value.toFixed(1))
-                    .attr('fill', 'black')
-                    .style('font-weight', 'bold');
-                legend.append("circle")
-                    .attr("transform", "translate(85," + offset + ")")
-                    .attr("fill", "#26E24A")
-                    .attr("r", radius)
-                    .style('stroke', 'black')
-                    .style('stroke-width', 2);
-                offset = offset + 2*radius + 5;
-                textAdjust = textAdjust + 2;
+        for (var i = -2; i < 3; i++) {
+            let value = mean + i * stdev;
+            let radius = sizeScale(value);
+            value = d3.max([value, 0]);  // avoid negatives for stdev range
+            let textOffset = offset + textAdjust;
+            let meanText;
+            if (i && Math.abs(i) < 2) {
+                meanText = i + ' stdev';
+            } else if (i) {
+                meanText = '';
+            } else {
+                meanText = 'Mean';
             }
+            legend.append("text")
+                .attr("transform", "translate(0, " + textOffset + ")")
+                .text(meanText)
+                .attr('fill', 'black')
+                .style('font-weight', 'bold');
+            legend.append("circle")
+                .attr("transform", "translate(85," + offset + ")")
+                .attr("fill", "#26E24A")
+                .attr("r", radius)
+                .style('stroke', 'black')
+                .style('stroke-width', 2);
+            legend.append("text")
+                .attr("transform", "translate(130, " + textOffset + ")")
+                .text(value.toFixed(1))
+                .attr('fill', 'black')
+                .style('font-weight', 'bold');
+            offset = offset + 2*radius + 5;
+            textAdjust = textAdjust + 2;
         }
     }
 }
